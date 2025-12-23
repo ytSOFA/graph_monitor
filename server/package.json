@@ -1,0 +1,22 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "SOFA graph monitor delay collector",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "start": "node index.js",
+    "once": "node index.js --once"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "ethers": "^6.15.0",
+    "graphql-request": "^7.3.5",
+    "node-cron": "^4.2.1",
+    "express": "^4.19.2"
+  }
+}
