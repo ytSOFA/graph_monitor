@@ -300,10 +300,39 @@ if (!runOnceOnly) {
   const app = express();
 
   // Serve latest delay data
-  app.get('/api/delays', async (_req, res) => {
+  app.get('/api/delays', async (req, res) => {
     try {
       ensureDataFile();
+      const rawCount = req.query.count;
+      let count = MAX_ENTRIES;
+      if (rawCount !== undefined) {
+        const parsed = Number.parseInt(rawCount, 10);
+        if (Number.isFinite(parsed) && parsed > 0) {
+          count = Math.min(parsed, MAX_ENTRIES);
+        }
+      }
       const body = await fs.promises.readFile(DATA_FILE, 'utf8');
+      const json = body ? JSON.parse(body) : {};
+      const trimSeries = (series) => (Array.isArray(series) ? series.slice(-count) : series);
+      const trimmed = {};
+      for (const [name, subgraph] of Object.entries(json)) {
+        if (!subgraph || typeof subgraph !== 'object') {
+          trimmed[name] = subgraph;
+          continue;
+        }
+        const next = { ...subgraph };
+        next.gateway = trimSeries(subgraph.gateway);
+        next.goldsky = trimSeries(subgraph.goldsky);
+        if (subgraph.indexers && typeof subgraph.indexers === 'object') {
+          next.indexers = Object.fromEntries(
+            Object.entries(subgraph.indexers).map(([idx, series]) => [
+              idx,
+              trimSeries(series),
+            ]),
+          );
+        }
+        trimmed[name] = next;
+      }
       res
         .status(200)
         .set({
@@ -311,7 +340,7 @@ if (!runOnceOnly) {
           'Cache-Control': 'no-store',
           'Access-Control-Allow-Origin': '*',
         })
-        .send(body || '{}');
+        .send(JSON.stringify(trimmed));
     } catch (error) {
       console.error('HTTP /api/delays error:', error);
       res.status(500).json({ error: 'failed to read data file' });

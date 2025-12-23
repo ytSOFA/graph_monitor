@@ -65,7 +65,7 @@ function resolveApiBase() {
 }
 
 const API_BASE = resolveApiBase();
-const API_URL = `${API_BASE}/api/delays`;
+const API_URL = `${API_BASE}/api/delays?count=${MAX_POINTS}`;
 
 function formatTs(ts) {
   return ts ? new Date(ts * 1000).toLocaleString() : 'N/A';

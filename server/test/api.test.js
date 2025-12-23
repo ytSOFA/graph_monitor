@@ -34,7 +34,7 @@ function startServer() {
 async function waitForHealth(retries = 120, intervalMs = 500) {
   for (let i = 0; i < retries; i += 1) {
     try {
-      const res = await fetch(`${BASE_URL}/health`);
+      const res = await fetch(`${BASE_URL}/api/health`);
       if (res.ok) return;
     } catch (error) {
       // ignore and retry
@@ -53,7 +53,7 @@ test(
     await waitForHealth();
     console.log('[api.test] health endpoint is up');
 
-    const health = await fetch(`${BASE_URL}/health`);
+    const health = await fetch(`${BASE_URL}/api/health`);
     assert.equal(health.status, 200);
     const healthBody = await health.json();
     assert.equal(healthBody.status, 'ok');
@@ -64,6 +64,28 @@ test(
     const json = await delays.json();
     assert.equal(typeof json, 'object');
     console.log('[api.test] /api/delays keys:', Object.keys(json).length);
+
+    const count = 1;
+    const sliced = await fetch(`${BASE_URL}/api/delays?count=${count}`);
+    assert.equal(sliced.status, 200);
+    const slicedJson = await sliced.json();
+    const checkSeries = (series, label) => {
+      if (!Array.isArray(series)) return;
+      assert.ok(
+        series.length <= count,
+        `${label} length ${series.length} exceeds ${count}`,
+      );
+    };
+    for (const [name, subgraph] of Object.entries(slicedJson)) {
+      if (!subgraph || typeof subgraph !== 'object') continue;
+      checkSeries(subgraph.gateway, `${name}.gateway`);
+      checkSeries(subgraph.goldsky, `${name}.goldsky`);
+      if (subgraph.indexers && typeof subgraph.indexers === 'object') {
+        for (const [idx, series] of Object.entries(subgraph.indexers)) {
+          checkSeries(series, `${name}.indexers.${idx}`);
+        }
+      }
+    }
   },
   { timeout: 120000 },
 );

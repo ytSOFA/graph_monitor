@@ -22,7 +22,7 @@
     - 若获取delay时有error，则delay字段存error的具体信息字符串。
     - 若subgraphs_delay.json中的某个subgraph的indexer已经不在这个subgraph的indexers（函数getSubgraphDelay的变量）中，则在文件中删除。
 ### 需要为前端展示提供服务接口，获取subgraphs_delay.json的内容
-  - 提供 GET /api/delays：读取 server/subgraphs_delay.json 原样返回 JSON。
+  - 提供 GET /api/delays：参数count，返回server/subgraphs_delay.json中每个subgraph最近的count个数组元素的JSON
   - 头部：Content-Type: application/json；Cache-Control: no-store；前端跨域，加 Access-Control-Allow-Origin: *。
   - 健康检查：GET /health 返回 200 和 {status:"ok"}。
   - 运行方式：沿用现有 node 进程，定时任务和 HTTP 接口共存；使用 express。
