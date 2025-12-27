@@ -20,7 +20,7 @@ const SUBGRAPH_ORDER = [
 const THRESHOLDS = {
   vault_eth: 11,
   vault_arb: 360,
-  vault_bsc: 240,
+  vault_bsc: 45,
   vault_pol: 60,
   vault_sei: 300,
   automator_eth: 6,
